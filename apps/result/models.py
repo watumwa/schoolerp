@@ -12,7 +12,6 @@ from .utils import score_grade
 
 
 # Create your models here.
-
 class Result(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     session = models.ForeignKey(AcademicSession, on_delete=models.CASCADE)
@@ -22,17 +21,23 @@ class Result(models.Model):
     test_score = models.IntegerField(default=0)
     exam_score = models.IntegerField(default=0)
 
-    class Meta:
-        ordering = ["subject"]
-
     def __str__(self):
         return f"{self.student} {self.session} {self.term} {self.subject}"
 
+    @property
+    def calculate_total_aggregates(self):
+        
+        results = Result.objects.filter(student=self.student, session=self.session, term=self.term, current_class=self.current_class)
+        total_aggregates = sum(result.aggregate() for result in results)
+        return total_aggregates
+    
     def total_score(self):
-        # Calculate the total score based on the weights and round to the nearest integer
         weighted_test_score = self.test_score * 0.3
         weighted_exam_score = self.exam_score * 0.7
         return round(weighted_test_score + weighted_exam_score)
+
+    def grade(self):
+        return score_grade(self.total_score())
 
     def aggregate(self):
         total_score = self.total_score()
@@ -54,19 +59,11 @@ class Result(models.Model):
             return 2
         elif 80 <= total_score <= 100:
             return 1
-
-    def grade(self):
-        return score_grade(self.total_score())
-
-    @classmethod
-    def calculate_total_aggregates(cls, student, session, term, current_class):
-        results = cls.objects.filter(student=student, session=session, term=term, current_class=current_class)
-        total_aggregates = sum(result.aggregate() for result in results)
-        return total_aggregates
-
-    @classmethod
-    def calculate_division(cls, student, session, term, current_class):
-        total_aggregates = cls.calculate_total_aggregates(student, session, term, current_class)
+    
+    
+    @property
+    def calculate_division(self):
+        total_aggregates = self.calculate_total_aggregates
         if 4 <= total_aggregates <= 12:
             return "Division 1"
         elif 13 <= total_aggregates <= 23:
@@ -76,4 +73,4 @@ class Result(models.Model):
         elif 30 <= total_aggregates <= 34:
             return "Division 4"
         else:
-            return "No Division"
+            return "Ungraded (U)"

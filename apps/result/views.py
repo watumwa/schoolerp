@@ -5,7 +5,6 @@ from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView, View
 
 from apps.students.models import Student
-from apps.result.models import AcademicSession,AcademicTerm,Student,StudentClass   
 
 from .forms import CreateResults, EditResults
 from .models import Result
@@ -16,17 +15,17 @@ def create_result(request):
     students = Student.objects.all()
     if request.method == "POST":
 
-        # After visiting the second page
+        # after visiting the second page
         if "finish" in request.POST:
             form = CreateResults(request.POST)
             if form.is_valid():
                 subjects = form.cleaned_data["subjects"]
                 session = form.cleaned_data["session"]
                 term = form.cleaned_data["term"]
-                student_ids = request.POST["students"]
+                students = request.POST["students"]
                 results = []
-                for student_id in student_ids.split(","):
-                    stu = Student.objects.get(pk=student_id)
+                for student in students.split(","):
+                    stu = Student.objects.get(pk=student)
                     if stu.current_class:
                         for subject in subjects:
                             check = Result.objects.filter(
@@ -48,19 +47,9 @@ def create_result(request):
                                 )
 
                 Result.objects.bulk_create(results)
+                return redirect("edit-results")
 
-                # Calculate aggregates and division for each student
-                for student_id in student_ids.split(","):
-                    stu = Student.objects.get(pk=student_id)
-                    total_aggregates = Result.calculate_total_aggregates(stu, session, term, stu.current_class)
-                    division = Result.calculate_division(stu, session, term, stu.current_class)
-                    # Store total_aggregates and division in session or pass to next page
-                    request.session[f'student_{stu.id}_total_aggregates'] = total_aggregates
-                    request.session[f'student_{stu.id}_division'] = division
-
-                return redirect("edit_results")
-
-        # After choosing students
+        # after choosing students
         id_list = request.POST.getlist("students")
         if id_list:
             form = CreateResults(
@@ -76,44 +65,8 @@ def create_result(request):
                 {"students": studentlist, "form": form, "count": len(id_list)},
             )
         else:
-            messages.warning(request, "You didn't select any student.")
+            messages.warning(request, "You didnt select any student.")
     return render(request, "result/create_result.html", {"students": students})
-
-@login_required
-def result_summary(request):
-    student_id = request.GET.get('student_id')
-    session_id = request.GET.get('session_id')
-    term_id = request.GET.get('term_id')
-    class_id = request.GET.get('class_id')
-
-    student = Student.objects.get(id=student_id)
-    session = AcademicSession.objects.get(id=session_id)
-    term = AcademicTerm.objects.get(id=term_id)
-    current_class = StudentClass.objects.get(id=class_id)
-
-    results = Result.objects.filter(student=student, session=session, term=term, current_class=current_class)
-    
-    total_aggregates = request.session.get(f'student_{student.id}_total_aggregates')
-    division = request.session.get(f'student_{student.id}_division')
-
-    context = {
-        'results': results,
-        'total_aggregates': total_aggregates,
-        'division': division,
-    }
-
-    return render(request, 'result/result_summary.html', context)
-
-
-
-
-
-
-
-
-
-
-
 
 
 @login_required
@@ -155,6 +108,8 @@ class ResultListView(LoginRequiredMixin, View):
                 "test_total": test_total,
                 "exam_total": exam_total,
                 "total_total": test_total + exam_total,
+                "calculate_total_aggregates":result.calculate_total_aggregates,
+                "calculate_division":result.calculate_division
             }
 
         context = {"results": bulk}

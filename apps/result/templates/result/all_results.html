@@ -5,55 +5,50 @@
   {% for key, result in results.items %}
     <div class="card">
       <div class="card-header">
-        {{result.student}}
+        {{ result.student }}   {{ result.student.current_class }}
       </div>
       <div class="card-body">
         <table class="table table-bordered table-sm">
           <thead class="thead-light">
-              <tr>
-                  <th></th>
-                  <th>Subject</th>
-                  <th>Test Score</th>
-                  <th>Exam Score</th>
-                  <th>Total Score</th>
-                  <th>Grade</th>
-              </tr>
+            <tr>
+              <th></th>
+              <th>Subject</th>
+              <th>Test Score(30%)</th>
+              <th>Exam Score(70%)</th>
+              <th>Total Score</th>
+              <th>Grade</th>
+            </tr>
           </thead>
           <tbody>
-              {% for result in results %}
-                  <tr>
-                      <td>{{ forloop.counter }}</td>
-                      <td>{{ result.subject }}</td>
-                      <td>{{ result.test_score }}</td>
-                      <td>{{ result.exam_score }}</td>
-                      <td>{{ result.total_score }}</td>
-                      <td>{{ result.grade }}</td>
-                  </tr>
-              {% endfor %}
+            {% for subject in result.subjects %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ subject.subject }}</td>
+                <td>{{ subject.test_score }}</td>
+                <td>{{ subject.exam_score }}</td>
+                <td>{{ subject.total_score }}</td>
+                <td>{{ subject.grade }}</td>
+              </tr>
+            {% endfor %}
           </tbody>
           <tfoot>
-              <tr>
-                  <td colspan="2">Total</td>
-                  <td>{{ test_total }}</td>
-                  <td>{{ exam_total }}</td>
-                  <td>{{ total_total }}</td>
-                  <td></td>
-              </tr>
-              <tr>
-                  <td colspan="4">Total Aggregates</td>
-                  <td colspan="2">{{ total_aggregates }}</td>
-              </tr>
-              <tr>
-                  <td colspan="4">Division</td>
-                  <td colspan="2">{{ division }}</td>
-              </tr>
+            <tr>
+              <td colspan="2"></td>
+              <td>{{ result.test_total }}</td>
+              <td>{{ result.exam_total }}</td>
+              <td>{{ result.total_total }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td colspan="4">Total Aggregates</td>
+              <td colspan="2">{{ result.calculate_total_aggregates }}</td>
+            </tr>
+            <tr>
+              <td colspan="4">Division</td>
+              <td colspan="2">{{ result.calculate_division }}</td>
+            </tr>
           </tfoot>
-      </table>
-      
-
-
-
-
+        </table>
       </div>
     </div>
   {% endfor %}
