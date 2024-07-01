@@ -8,9 +8,11 @@ class Staff(models.Model):
     STATUS = [("active", "Active"), ("inactive", "Inactive")]
 
     GENDER = [("male", "Male"), ("female", "Female")]
+    C_L_A_S_S =[("P1","PRIMARY ONE"),("P2","PRIMARY TWO"),("P3","PRIMARY THREE"),("P4","PRIMARY FOUR"),("P5","PRIMARY FIVE"),("P6","PRIMARY SIX"),("P7","PRIMARY SEVEN")]
 
     current_status = models.CharField(max_length=10, choices=STATUS, default="active")
     surname = models.CharField(max_length=200)
+    class_taught = models.CharField(max_length=50, choices=C_L_A_S_S)
     firstname = models.CharField(max_length=200)
     other_name = models.CharField(max_length=200, blank=True)
     gender = models.CharField(max_length=10, choices=GENDER, default="male")
