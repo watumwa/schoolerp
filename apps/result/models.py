@@ -74,3 +74,12 @@ class Result(models.Model):
             return "Division 4"
         else:
             return "Ungraded (U)"
+        
+    @property
+    def calculate_position(self):
+        results = Result.objects.filter(session=self.session, term=self.term, current_class=self.current_class)
+        sorted_results = sorted(results, key=lambda x: x.total_score(), reverse=True)
+        for idx, result in enumerate(sorted_results, start=1):
+            if result.student == self.student:
+                return idx
+        return None

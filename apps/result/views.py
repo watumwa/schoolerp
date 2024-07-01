@@ -109,7 +109,8 @@ class ResultListView(LoginRequiredMixin, View):
                 "exam_total": exam_total,
                 "total_total": test_total + exam_total,
                 "calculate_total_aggregates":result.calculate_total_aggregates,
-                "calculate_division":result.calculate_division
+                "calculate_division":result.calculate_division,
+                "calculate_position":result.calculate_position
             }
 
         context = {"results": bulk}
